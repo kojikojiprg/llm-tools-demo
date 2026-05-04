@@ -1,14 +1,16 @@
 """
 ツール③: CSV → 分析レポート自動生成Bot
 """
+
 import streamlit as st
 import matplotlib.pyplot as plt
 import sys, os
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
-from common.llm import chat_json
-from common.ui import page_header
-from common.file_utils import read_csv, df_to_csv_bytes
+from src.sommon.llm import chat_json
+from src.sommon.ui import page_header
+from src.sommon.file_utils import read_csv, df_to_csv_bytes
 
 try:
     import japanize_matplotlib  # noqa

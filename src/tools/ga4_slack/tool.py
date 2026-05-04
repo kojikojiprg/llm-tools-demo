@@ -1,17 +1,24 @@
 """
 ツール④: GA4 × Slack 週次レポート自動送信
 """
+
 import streamlit as st
 import os, sys
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
-from common.llm import chat_json
-from common.ui import page_header, info_card
+from src.sommon.llm import chat_json
+from src.sommon.ui import page_header, info_card
 
 
 def _fetch_ga4_data(property_id: str) -> dict:
     from google.analytics.data_v1beta import BetaAnalyticsDataClient
-    from google.analytics.data_v1beta.types import RunReportRequest, DateRange, Metric, Dimension
+    from google.analytics.data_v1beta.types import (
+        RunReportRequest,
+        DateRange,
+        Metric,
+        Dimension,
+    )
     from datetime import date, timedelta
 
     ga = BetaAnalyticsDataClient()
@@ -20,13 +27,21 @@ def _fetch_ga4_data(property_id: str) -> dict:
     prev_week = today - timedelta(days=14)
 
     def run(start, end):
-        return ga.run_report(RunReportRequest(
-            property=f"properties/{property_id}",
-            date_ranges=[DateRange(start_date=start.isoformat(), end_date=end.isoformat())],
-            metrics=[Metric(name="sessions"), Metric(name="activeUsers"),
-                     Metric(name="bounceRate"), Metric(name="averageSessionDuration")],
-            dimensions=[Dimension(name="date")],
-        ))
+        return ga.run_report(
+            RunReportRequest(
+                property=f"properties/{property_id}",
+                date_ranges=[
+                    DateRange(start_date=start.isoformat(), end_date=end.isoformat())
+                ],
+                metrics=[
+                    Metric(name="sessions"),
+                    Metric(name="activeUsers"),
+                    Metric(name="bounceRate"),
+                    Metric(name="averageSessionDuration"),
+                ],
+                dimensions=[Dimension(name="date")],
+            )
+        )
 
     def total(report, idx):
         return sum(float(r.metric_values[idx].value) for r in report.rows)
@@ -45,6 +60,7 @@ def _fetch_ga4_data(property_id: str) -> dict:
 
 def _post_slack(channel_id: str, token: str, text: str):
     from slack_sdk import WebClient
+
     WebClient(token=token).chat_postMessage(channel=channel_id, text=text, mrkdwn=True)
 
 
@@ -56,19 +72,33 @@ def render():
     )
 
     st.markdown("### ⚙️ 設定")
-    property_id = st.text_input("GA4 プロパティID", value=os.environ.get("GA4_PROPERTY_ID", ""), placeholder="123456789")
-    slack_token = st.text_input("Slack Bot Token", value=os.environ.get("SLACK_BOT_TOKEN", ""), type="password")
-    channel_id  = st.text_input("Slack チャンネルID", value=os.environ.get("SLACK_CHANNEL_ID", ""), placeholder="C0XXXXXXXXX")
+    property_id = st.text_input(
+        "GA4 プロパティID",
+        value=os.environ.get("GA4_PROPERTY_ID", ""),
+        placeholder="123456789",
+    )
+    slack_token = st.text_input(
+        "Slack Bot Token", value=os.environ.get("SLACK_BOT_TOKEN", ""), type="password"
+    )
+    channel_id = st.text_input(
+        "Slack チャンネルID",
+        value=os.environ.get("SLACK_CHANNEL_ID", ""),
+        placeholder="C0XXXXXXXXX",
+    )
 
     st.divider()
     info_card(
         "📋 事前準備",
         "① Google Cloud でサービスアカウントを作成し <code>service_account.json</code> を保存<br>"
         "② GA4 管理画面でサービスアカウントに「閲覧者」権限を付与<br>"
-        "③ Slack App を作成し <code>chat:write</code> 権限を付与してBotをチャンネルに招待"
+        "③ Slack App を作成し <code>chat:write</code> 権限を付与してBotをチャンネルに招待",
     )
 
-    if st.button("⚡ 今すぐレポートを送信", type="primary", disabled=not all([property_id, slack_token, channel_id])):
+    if st.button(
+        "⚡ 今すぐレポートを送信",
+        type="primary",
+        disabled=not all([property_id, slack_token, channel_id]),
+    ):
         with st.spinner("GA4からデータ取得中..."):
             try:
                 ga_data = _fetch_ga4_data(property_id)
@@ -78,6 +108,7 @@ def render():
 
         with st.spinner("AIコメント生成中..."):
             import json
+
             insight = chat_json(f"""
 以下はWebサイトの先週のGA4データです。マーケター向けに週次コメントをJSON形式で返してください。
 

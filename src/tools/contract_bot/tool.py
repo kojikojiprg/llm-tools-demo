@@ -1,13 +1,15 @@
 """
 ツール②: 契約書・規約サマリーBot
 """
+
 import streamlit as st
 import sys, os
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
-from common.llm import chat_json
-from common.ui import page_header
-from common.file_utils import extract_pdf_text, split_into_chunks
+from src.sommon.llm import chat_json
+from src.sommon.ui import page_header
+from src.sommon.file_utils import extract_pdf_text, split_into_chunks
 
 
 def render():
