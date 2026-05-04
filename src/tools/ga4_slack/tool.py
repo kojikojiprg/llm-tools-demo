@@ -7,8 +7,8 @@ import os, sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
-from src.sommon.llm import chat_json
-from src.sommon.ui import page_header, info_card
+from src.common.llm import chat_json
+from src.common.ui import page_header, info_card
 
 
 def _fetch_ga4_data(property_id: str) -> dict:

@@ -8,7 +8,7 @@ import sys, os
 
 sys.path.append(os.path.dirname(__file__))
 
-from src.sommon.ui import inject_global_css
+from src.common.ui import inject_global_css
 
 # ページ設定
 st.set_page_config(

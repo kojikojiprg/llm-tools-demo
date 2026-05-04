@@ -8,9 +8,9 @@ import sys, os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
-from src.sommon.llm import chat_json
-from src.sommon.ui import page_header, info_card
-from src.sommon.file_utils import df_to_csv_bytes
+from src.common.llm import chat_json
+from src.common.ui import page_header, info_card
+from src.common.file_utils import df_to_csv_bytes
 
 
 def render():

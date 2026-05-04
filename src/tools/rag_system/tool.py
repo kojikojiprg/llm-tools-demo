@@ -7,8 +7,8 @@ import os, sys, tempfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
-from src.sommon.llm import chat
-from src.sommon.ui import page_header
+from src.common.llm import chat
+from src.common.ui import page_header
 from src.tools.rag_system.rag import get_collection, index_document, search
 
 
