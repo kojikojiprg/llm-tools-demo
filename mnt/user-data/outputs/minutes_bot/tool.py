@@ -1,9 +1,11 @@
 """
 ツール①: 議事録 → アクションアイテム抽出Bot
 """
+
 import streamlit as st
 import pandas as pd
 import sys, os
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from common.llm import chat_json
@@ -29,18 +31,25 @@ def render():
         )
 
     with tab_audio:
-        audio_file = st.file_uploader("音声ファイル（mp3 / wav / m4a）", type=["mp3", "wav", "m4a"])
+        audio_file = st.file_uploader(
+            "音声ファイル（mp3 / wav / m4a）", type=["mp3", "wav", "m4a"]
+        )
         if audio_file:
             st.audio(audio_file)
             if st.button("🔤 文字起こし（Whisper）"):
                 with st.spinner("文字起こし中..."):
                     try:
                         import openai, tempfile
+
                         oa = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY", ""))
-                        with tempfile.NamedTemporaryFile(delete=False, suffix="." + audio_file.name.split(".")[-1]) as tmp:
+                        with tempfile.NamedTemporaryFile(
+                            delete=False, suffix="." + audio_file.name.split(".")[-1]
+                        ) as tmp:
                             tmp.write(audio_file.read())
                         with open(tmp.name, "rb") as f:
-                            result = oa.audio.transcriptions.create(model="whisper-1", file=f, language="ja")
+                            result = oa.audio.transcriptions.create(
+                                model="whisper-1", file=f, language="ja"
+                            )
                         st.session_state["transcribed_minutes"] = result.text
                         st.success("文字起こし完了！")
                     except Exception as e:
@@ -52,7 +61,9 @@ def render():
     st.divider()
     final_text = minutes_text.strip()
 
-    if st.button("⚡ アクションアイテムを抽出する", type="primary", disabled=not final_text):
+    if st.button(
+        "⚡ アクションアイテムを抽出する", type="primary", disabled=not final_text
+    ):
         with st.spinner("Claude が解析中..."):
             data = chat_json(f"""
 以下の議事録からアクションアイテムをすべて抽出し、JSON形式で出力してください。
